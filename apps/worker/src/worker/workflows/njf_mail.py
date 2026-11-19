@@ -66,13 +66,40 @@ class NjfMailDigestOutput(pydantic.BaseModel):
 def _as_dict(result: Any) -> dict:
     if isinstance(result, dict):
         return result
+    if isinstance(result, str):
+        try:
+            parsed = json.loads(result)
+        except json.JSONDecodeError:
+            return {"value": result}
+        return parsed if isinstance(parsed, dict) else {"value": parsed}
     if hasattr(result, "model_dump"):
         return result.model_dump()
+    if hasattr(result, "dict"):
+        return result.dict()
     return dict(result)
 
 
+def _unwrap(result: Any) -> dict:
+    data = _as_dict(result)
+    content = data.get("content")
+    if isinstance(content, list):
+        for block in content:
+            text = _as_dict(block).get("text")
+            if isinstance(text, str):
+                try:
+                    parsed = json.loads(text)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(parsed, dict):
+                    return parsed
+    for key in ("result", "structuredContent", "structured_content", "output", "data"):
+        if isinstance(data.get(key), dict):
+            return data[key]
+    return data
+
+
 def _thread_refs(result: Any) -> list[dict]:
-    threads = _as_dict(result).get("threads") or []
+    threads = _unwrap(result).get("threads") or []
     refs: list[dict] = []
     for thread in threads:
         thread = _as_dict(thread)
@@ -96,7 +123,7 @@ def _thread_refs(result: Any) -> list[dict]:
 
 
 def _thread_content(result: Any) -> str:
-    messages = _as_dict(result).get("messages") or []
+    messages = _unwrap(result).get("messages") or []
     parts: list[str] = []
     for message in messages:
         message = _as_dict(message)

@@ -1,6 +1,7 @@
 """The NJF mail digest workflow turns Gmail search hits into a summarized digest."""
 
 import asyncio
+import json
 from datetime import timedelta
 
 import mistralai.workflows as workflows
@@ -96,3 +97,45 @@ async def test_njf_mail_digest_handles_empty_inbox(temporal_env) -> None:
         result = await asyncio.wait_for(handle.result(), timeout=15)
         assert result["thread_count"] == 0
         assert result["threads"] == []
+
+
+def test_thread_refs_parses_connector_shapes() -> None:
+    thread = {
+        "id": "t1",
+        "messages": [
+            {
+                "id": "m1",
+                "subject": "NJF 2026",
+                "sender": "contact@stichtingnjf.nl",
+                "date": "2026-05-20T20:45:40+02:00",
+                "snippet": "s",
+                "labelIds": ["UNREAD", "INBOX"],
+            }
+        ],
+    }
+    expected = [
+        {
+            "thread_id": "t1",
+            "subject": "NJF 2026",
+            "sender": "contact@stichtingnjf.nl",
+            "date": "2026-05-20T20:45:40+02:00",
+            "unread": True,
+            "snippet": "s",
+        }
+    ]
+    assert njf_mail._thread_refs({"threads": [thread]}) == expected
+    assert njf_mail._thread_refs(json.dumps({"threads": [thread]})) == expected
+    assert njf_mail._thread_refs({"content": [{"type": "text", "text": json.dumps({"threads": [thread]})}]}) == expected
+    assert njf_mail._thread_refs({"result": {"threads": [thread]}}) == expected
+    assert njf_mail._thread_refs({"threads": []}) == []
+    assert njf_mail._thread_refs({}) == []
+
+
+def test_thread_content_joins_bodies() -> None:
+    result = {
+        "messages": [
+            {"plaintextBody": "eerste bericht"},
+            {"plaintextBody": None, "snippet": "alleen snippet"},
+        ]
+    }
+    assert njf_mail._thread_content(result) == "eerste bericht\n\n---\n\nalleen snippet"
