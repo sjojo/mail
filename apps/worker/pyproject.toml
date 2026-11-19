@@ -5,7 +5,8 @@ requires-python = ">=3.12,<3.15"
 dependencies = [
     "utils",
     "env",
-    "mistralai>=3.6.0",
+    "mistralai[agents]>=3.6.0",
+    "mistralai-agents>=1.1.2,<1.2",
     "mistralai-workflows[mistralai]>=3.17.1",
     "pydantic>=2.14.1",
     "structlog>=25.5.0",
