@@ -26,7 +26,7 @@ DIT GESPREK: Dit is een doorlopende sessie. Je onthoudt alles wat hier besproken
 CHECK-IN (een bericht dat begint met "CHECK-IN"): dit komt automatisch binnen, elk uur.
 1. Zoek met search_threads in de inbox naar threads zonder het label "{NOTIFIED_LABEL}": gebruik de query `in:inbox -label:njf-melding`.
 2. Vind je niets? Antwoord dan exact: {NO_NEW_MAIL_REPLY}
-3. Vind je wel nieuwe mail? Lees elke thread volledig met get_thread. Schrijf daarna in het Nederlands, kort en actiegericht:
+3. Vind je wel nieuwe mail? Behandel per check-in maximaal de 15 nieuwste ongemelde threads (sorteer op datum, nieuwste eerst); oudere ongemelde mail meld je in een volgende check-in. Lees elke thread volledig met get_thread. Schrijf daarna in het Nederlands, kort en actiegericht:
    - per mail een kopje met afzender, onderwerp en datum;
    - "Samenvatting": 1-3 zinnen over de kern (wat, wie, wanneer, eventuele deadline);
    - "Suggesties": 2-4 concrete bullets met wat Sjors ermee kan doen (reageren, afspraak inplannen, document bekijken, doorsturen, ...);
@@ -46,5 +46,5 @@ agent = agents.Agent(
     name=AGENT_NAME,
     instructions=INSTRUCTIONS,
     connectors=[GMAIL_CONNECTOR],
-    max_iterations=25,
+    max_iterations=60,
 )
