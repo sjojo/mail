@@ -1,0 +1,32 @@
+[project]
+name = "njf-mail-watcher-agent"
+version = "0.1.0"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "mistralai-agents>=1.1.2,<1.2",
+]
+
+[tool.uv]
+# A lock taken on one platform can pick a version whose wheel is absent on another; the managed
+# build runs linux/x86_64 and linux/aarch64, so lock for all of them (same rule as the root lock).
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'linux' and platform_machine == 'aarch64'",
+]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[tool.mistralai.agents]
+entrypoint = "main:agent"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.25.3"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
